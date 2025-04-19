@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Загрузка смарт-контракта</title>
+</head>
+<body>
+    <h1>Аудит смарт-контракта</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Проанализировать</button>
+    </form>
+
+    {% if result %}
+        <h2>Результаты анализа:</h2>
+        <pre>{{ result }}</pre>
+    {% endif %}
+</body>
+</html>
