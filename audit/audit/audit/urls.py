@@ -21,6 +21,6 @@ from contracts.views import index
 urlpatterns = [
     path('', index, name='index'),  # Главная страница
     path('admin/', admin.site.urls),
-    path('auth/', include('users.urls', namespace='users')),
+    path('auth/', include('users.urls')),  
     path('contracts/', include('contracts.urls')),
 ]

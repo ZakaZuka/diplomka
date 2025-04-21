@@ -41,6 +41,8 @@ def get_nonce(request):
     except Exception as e:
         logger.error(f"Error in get_nonce: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
+    
+    
 @csrf_exempt
 @require_POST
 def metamask_login_view(request):

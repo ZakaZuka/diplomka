@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import openai
 from slither import Slither
+import shutil
 
 CHECK_TRANSLATIONS = {
     'reentrancy-eth': 'Уязвимость повторного входа (ETH‑перевод)',
@@ -26,7 +27,7 @@ IMPACT_TRANSLATIONS = {
 class ERC20AuditTool:
     def __init__(self, contract_path, openai_api_key):
         self.contract_path = Path(contract_path)
-        self.slither = Slither(str(self.contract_path))
+        #self.slither = Slither(str(self.contract_path))
         openai.api_key = openai_api_key
 
     def translate_with_gpt(self, text):
@@ -65,6 +66,16 @@ class ERC20AuditTool:
     def run_slither_json(self):
         json_path = self.contract_path.with_suffix('.slither.json')
 
+        # Удаляем старый файл, если есть
+        if json_path.exists():
+            json_path.unlink()
+
+        # Проверим, что slither доступен
+        if not shutil.which("slither"):
+            print("❌ Slither не установлен или не найден в PATH")
+            return None
+
+        # Выполним анализ через subprocess
         proc = subprocess.run(
             ['slither', str(self.contract_path), '--json', str(json_path)],
             stdout=subprocess.PIPE,
@@ -76,6 +87,12 @@ class ERC20AuditTool:
             print("⚠️ Slither завершился с ошибкой")
             error_output = proc.stderr.strip() or proc.stdout.strip()
             print(self.translate_with_gpt(error_output))
+            return None
+
+        # Проверим, что JSON действительно создан
+        if not json_path.exists():
+            print("❌ Slither не сгенерировал JSON. Пропускаем парсинг уязвимостей.")
+            return None
 
         return json_path
 
@@ -96,6 +113,9 @@ class ERC20AuditTool:
                 'elements': [e.get('name') for e in det.get('elements', [])],
                 'location': det.get('source_mapping', '').strip(),
             })
+
+        
+    
         return issues
 
     def save_simple_report(self, issues, path):
@@ -110,10 +130,21 @@ class ERC20AuditTool:
         code = self.contract_path.read_text(encoding='utf-8')
         ai_analysis = self.analyze_with_ai(code)
 
-        # Slither анализ
         json_path = self.run_slither_json()
-        issues = self.parse_slither_issues(json_path)
-        self.save_simple_report(issues, self.contract_path.with_name('simple_report.json'))
+        issues = []
+        if json_path:
+            issues = self.parse_slither_issues(json_path)
+            self.save_simple_report(issues, self.contract_path.with_name('simple_report.json'))
+        else:
+            print("❌ Slither не сгенерировал JSON. Пропускаем парсинг уязвимостей.")
+
+        if not issues:
+            print("✅ Уязвимостей не найдено Slither'ом.")
+            return {
+                'ai_analysis': ai_analysis,
+                'slither_issues': [],
+                'json_path': str(json_path) if json_path else "—"
+            }
 
         return {
             'ai_analysis': ai_analysis,
