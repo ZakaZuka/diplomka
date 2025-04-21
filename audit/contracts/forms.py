@@ -2,7 +2,15 @@
 from django import forms
 
 class ContractUploadForm(forms.Form):
-    contract_file = forms.FileField(label='Загрузите контракт (.sol)', required=False)
+    contract_file = forms.FileField(
+        label='Загрузите контракт (.sol)',
+        required=False,
+        widget=forms.ClearableFileInput(attrs={
+            'id': 'file-upload',
+            'style': 'display: none;'
+        })
+    )
+
     contract_code = forms.CharField(
         label='Или вставьте код контракта',
         widget=forms.Textarea(attrs={'rows': 15}),
