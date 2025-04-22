@@ -1,0 +1,99 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Анализ смарт-контракта</title>
+    <link rel="stylesheet" href="{% static 'css/contracts/styles.css' %}">
+    <script src="{% static 'js/validate.js' %}" defer></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Анализ смарт-контракта ERC-20</h1>
+
+        <form method="post" enctype="multipart/form-data" onsubmit="return validateFile()">
+            {% csrf_token %}
+
+            <div class="form-group">
+                {{ form.contract_file.label_tag }}
+                {{ form.contract_file }}
+                <label for="file-upload" class="custom-file-button">
+                    Выбрать файл
+                </label>
+                <span id="file-name">Файл не выбран</span>
+
+                <div id="file-error" class="error-message"></div>
+            </div>
+
+            <div class="form-group">
+                {{ form.contract_code.label_tag }}
+                {{ form.contract_code }}
+            </div>
+
+            {% if form.errors %}
+            <div class="error-message">
+                {{ form.errors.contract_file }}
+                {{ form.errors.contract_code }}
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <button type="submit">Проанализировать</button>
+        </form>
+
+
+        <!-- Секция для отображения результатов анализа -->
+        {% if analysis_results %}
+        <div class="analysis-results">
+            <h2>Результаты анализа</h2>
+
+            {% if analysis_results.errors %}
+            <div class="error-message">
+                <h3>Ошибки анализа:</h3>
+                <pre>{{ analysis_results.errors }}</pre>
+            </div>
+            {% endif %}
+
+            {% if analysis_results.issues %}
+            {% for issue in analysis_results.issues %}
+            <div
+                class="issue {% if issue.impact == 'critical' %}critical{% elif issue.impact == 'warning' %}warning{% else %}info{% endif %}">
+                <div class="issue-title">{{ issue.check }}</div>
+                <div class="issue-meta">
+                    Уровень риска: {{ issue.impact|capfirst }} |
+                    Локация: {{ issue.location }}
+                </div>
+                <div class="issue-description">
+                    {{ issue.description }}
+                </div>
+                {% if issue.elements %}
+                <div class="issue-elements">
+                    Элементы: {{ issue.elements|join:", " }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="no-issues">
+                ✅ Критических уязвимостей не обнаружено
+            </div>
+
+            {% if analysis_results.warnings %}
+            <div class="analysis-warnings">
+                <h3>Рекомендации по улучшению:</h3>
+                <ul>
+                    {% for warning in analysis_results.warnings %}
+                    <li>{{ warning }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+
+</html>
