@@ -1,3 +1,4 @@
+Для корректной работы нужно сделать директорию на латинице и от туда запускать
 # for bot
 pip install python-telegram-bot openai slither-analyzer solc-select
 # for site
