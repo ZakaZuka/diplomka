@@ -80,13 +80,20 @@ class ContractAnalyzer:
                     tmp.write(source)
                 tmp_path = tmp.name
 
-            # Запуск Slither
+            # Запуск Slither с явным указанием детекторов
             report_path = f"{tmp_path}.json"
             cmd = [
-                "slither", tmp_path,
+                "slither",
+                tmp_path,
                 "--json", report_path,
                 "--disable-color",
-                "--fail-none"
+                "--fail-none",
+                "--detect", "all",  # Включаем ВСЕ детекторы
+                "--exclude-informational",
+                "--solc-remaps", "@openzeppelin/=node_modules/@openzeppelin/",
+                "--solc-settings", "{'optimizer': {'enabled': False}}",
+                "--filter-paths", "node_modules,test",
+                "--triage-mode"  # Более глубокий анализ
             ]
             
             result = subprocess.run(
