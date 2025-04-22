@@ -87,83 +87,65 @@
 # def index(request):
 #     return render(request, 'contracts/index.html')
 
-
+from django.shortcuts import render
+from django.http import JsonResponse
+from .forms import ContractForm
+from .utils import ContractAnalyzer
 import tempfile
 import os
 import logging
-from django.shortcuts import render
-from django.conf import settings
-from .forms import ContractForm
-from .utils import analyze_contract
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 def contract_analysis_view(request):
-    analysis_results = {}
-    form = ContractForm(request.POST or None, request.FILES or None)
-
-    if request.method == 'POST' and form.is_valid():
-        contract_file = form.cleaned_data.get('contract_file')
-        contract_code = form.cleaned_data.get('contract_code')
-
-        # Создаем временную директорию, если не существует
-        temp_dir = os.path.join(settings.BASE_DIR, 'temp_contracts')
-        os.makedirs(temp_dir, exist_ok=True)
-
-        try:
-            # Создаем временный файл с уникальным именем
-            with tempfile.NamedTemporaryFile(
-                mode='w+',
-                suffix='.sol',
-                encoding='utf-8',
-                dir=temp_dir,
-                delete=False  # Удалим вручную после анализа
-            ) as tmp:
-                tmp_path = tmp.name
-                
-                if contract_file:
-                    # Обрабатываем загруженный файл
-                    try:
-                        content = contract_file.read().decode('utf-8')
-                        tmp.write(content)
-                    except UnicodeDecodeError:
-                        # Пробуем другие кодировки, если utf-8 не работает
-                        contract_file.seek(0)
-                        content = contract_file.read().decode('latin-1')
-                        tmp.write(content)
-                else:
-                    # Используем код из текстового поля
-                    tmp.write(contract_code)
-
+    """Обработчик для анализа контракта"""
+    analyzer = ContractAnalyzer()
+    results = {'success': False}
+    
+    if request.method == 'POST':
+        form = ContractForm(request.POST, request.FILES)
+        
+        if form.is_valid():
             try:
-                # Анализируем контракт
-                issues, report_path = analyze_contract(tmp_path)
-                analysis_results['issues'] = issues
-                
-                # Сохраняем отчет, если нужно
-                if report_path and os.path.exists(report_path):
-                    analysis_results['report_path'] = report_path
+                # Создаем временный файл для анализа
+                with tempfile.NamedTemporaryFile(mode='w+', suffix='.sol', delete=False) as tmp_file:
+                    if form.cleaned_data.get('contract_file'):
+                        # Обрабатываем загруженный файл
+                        for chunk in form.cleaned_data['contract_file'].chunks():
+                            tmp_file.write(chunk.decode('utf-8'))
+                    else:
+                        # Обрабатываем введенный код
+                        tmp_file.write(form.cleaned_data['contract_code'])
                     
-            except Exception as e:
-                logger.error(f"Ошибка анализа контракта: {str(e)}", exc_info=True)
-                analysis_results['error'] = f"Ошибка анализа: {str(e)}"
+                    tmp_file_path = tmp_file.name
                 
-        except IOError as e:
-            logger.error(f"Ошибка работы с файлом: {str(e)}", exc_info=True)
-            analysis_results['error'] = "Ошибка обработки файла контракта"
-            
-        finally:
-            # Удаляем временный файл контракта
-            try:
-                if 'tmp_path' in locals() and os.path.exists(tmp_path):
-                    os.remove(tmp_path)
+                # Анализируем контракт
+                issues, _ = analyzer.analyze(
+                    source=tmp_file_path,
+                    is_file=True
+                )
+                
+                results.update({
+                    'success': True,
+                    'issues': issues
+                })
+                
             except Exception as e:
-                logger.error(f"Не удалось удалить временный файл {tmp_path}: {str(e)}")
-
+                logger.error(f"Ошибка анализа: {str(e)}")
+                results['error'] = str(e)
+            finally:
+                # Удаляем временный файл
+                if 'tmp_file_path' in locals() and os.path.exists(tmp_file_path):
+                    try:
+                        os.remove(tmp_file_path)
+                    except Exception as e:
+                        logger.error(f"Не удалось удалить временный файл: {str(e)}")
+            
+            return JsonResponse(results)
+    
+    # GET запрос или невалидная форма
     return render(request, 'contracts/analysis.html', {
-        'form': form,
-        'analysis_results': analysis_results
+        'form': ContractForm()
     })
 
 def index(request):
