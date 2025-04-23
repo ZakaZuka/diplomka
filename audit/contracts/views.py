@@ -23,7 +23,7 @@ def upload_contract(request):
             else:
                 form.add_error(None, "Вы должны загрузить файл или вставить код")
                 return render(request, 'contracts/upload.html', {'form': form})
-            auditor = ERC20AuditTool(file_path, openai_api_key='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')
+            auditor = ERC20AuditTool(file_path, openai_api_key='AIzaSyA1Y8Ii4Hsfl71q4bfQq5IshxTYHjkxiZA')
             result = auditor.analyze()
     else:
         form = ContractUploadForm()
