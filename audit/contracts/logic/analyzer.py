@@ -63,38 +63,49 @@ class ERC20AuditTool:
         )
         return response.choices[0].message.content.strip()
 
+    # def run_slither_json(self):
+    #     json_path = self.contract_path.with_suffix('.slither.json')
+
+    #     # Удаляем старый файл, если есть
+    #     if json_path.exists():
+    #         json_path.unlink()
+
+    #     # Проверим, что slither доступен
+    #     if not shutil.which("slither"):
+    #         print("❌ Slither не установлен или не найден в PATH")
+    #         return None
+
+    #     # Выполним анализ через subprocess
+    #     proc = subprocess.run(
+    #         ['slither', str(self.contract_path), '--json', str(json_path)],
+    #         stdout=subprocess.PIPE,
+    #         stderr=subprocess.PIPE,
+    #         text=True
+    #     )
+
+    #     #if proc.returncode != 0:
+    #         #print("⚠️ Slither завершился с ошибкой")
+    #     error_output = proc.stderr.strip() or proc.stdout.strip()
+    #     #print(self.translate_with_gpt(error_output))
+        
+    #     print(error_output)
+
+       
+    #     return error_output
+
     def run_slither_json(self):
-        json_path = self.contract_path.with_suffix('.slither.json')
-
-        # Удаляем старый файл, если есть
-        if json_path.exists():
-            json_path.unlink()
-
-        # Проверим, что slither доступен
         if not shutil.which("slither"):
-            print("❌ Slither не установлен или не найден в PATH")
-            return None
+            return "❌ Slither не установлен или не найден в PATH"
 
-        # Выполним анализ через subprocess
         proc = subprocess.run(
-            ['slither', str(self.contract_path), '--json', str(json_path)],
+            ['slither', str(self.contract_path)],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True
         )
 
-        if proc.returncode != 0:
-            print("⚠️ Slither завершился с ошибкой")
-            error_output = proc.stderr.strip() or proc.stdout.strip()
-            print(self.translate_with_gpt(error_output))
-            return None
+        return proc.stderr.strip() or proc.stdout.strip()
 
-        # Проверим, что JSON действительно создан
-        if not json_path.exists():
-            print("❌ Slither не сгенерировал JSON. Пропускаем парсинг уязвимостей.")
-            return None
-
-        return json_path
 
     def parse_slither_issues(self, json_path):
         try:
@@ -123,37 +134,62 @@ class ERC20AuditTool:
             json.dump(issues, f, ensure_ascii=False, indent=2)
         print(f"💾 Отчёт сохранён: {path}")
 
+    # def analyze(self):
+    #     print(f"🔍 Анализируем: {self.contract_path.name}")
+
+    #     # AI-анализ
+    #     json_path = self.run_slither_json()
+
+    #     code = self.contract_path.read_text(encoding='utf-8')
+    #     ai_analysis = "0" # self.analyze_with_ai(code)
+
+    #     # issues = []
+    #     # if json_path:
+    #     #     issues = self.parse_slither_issues(json_path)
+    #     #     self.save_simple_report(issues, self.contract_path.with_name('simple_report.json'))
+    #     # else:
+    #     #     print("❌ Slither не сгенерировал JSON. Пропускаем парсинг уязвимостей.")
+
+    #     # if not issues:
+    #     #     print("✅ Уязвимостей не найдено Slither'ом.")
+    #     #     return {
+    #     #         'ai_analysis': ai_analysis,
+    #     #         'slither_issues': [],
+    #     #         'json_path': str(json_path) if json_path else "—"
+    #     #     }
+
+    #     #return 'Анализ чере' + json_path + '/n' + ai_analysis
+    #     res = "\n" + json_path + "\n\nАнализ ИИ:\n" + ai_analysis
+        
+    #     return res
+
     def analyze(self):
         print(f"🔍 Анализируем: {self.contract_path.name}")
 
-        # AI-анализ
+        # Запуск slither
+        slither_output = self.run_slither_json()
+
+        # Читаем код контракта
         code = self.contract_path.read_text(encoding='utf-8')
+
+        # AI-анализ
         ai_analysis = self.analyze_with_ai(code)
 
-        json_path = self.run_slither_json()
-        issues = []
-        if json_path:
-            issues = self.parse_slither_issues(json_path)
-            self.save_simple_report(issues, self.contract_path.with_name('simple_report.json'))
-        else:
-            print("❌ Slither не сгенерировал JSON. Пропускаем парсинг уязвимостей.")
+        # Формируем текст для вывода
+        result_text = f"""
+            === 📄 AI-анализ ===
 
-        if not issues:
-            print("✅ Уязвимостей не найдено Slither'ом.")
-            return {
-                'ai_analysis': ai_analysis,
-                'slither_issues': [],
-                'json_path': str(json_path) if json_path else "—"
-            }
+            {ai_analysis}
 
-        return {
-            'ai_analysis': ai_analysis,
-            'slither_issues': issues,
-            'json_path': str(json_path)
-        }
+            === ⚙️ Slither результат ===
+
+            {slither_output if slither_output else '❌ Slither ничего не вернул или произошла ошибка'}
+            """
+        return result_text.strip()
     
 if __name__ == "__main__":
-    tool = ERC20AuditTool("contracts/MyERC20.sol", openai_api_key="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")
+    tool = ERC20AuditTool("soll.sol", 
+                          openai_api_key="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")
     result = tool.analyze()
 
     print("\n=== 📋 AI-анализ ===")

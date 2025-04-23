@@ -7,8 +7,8 @@
 # ]
 
 from django.urls import path
-from .views import contract_analysis_view
+from .views import upload_contract
 
 urlpatterns = [
-    path('', contract_analysis_view, name='analyze_contract'),
+    path('', upload_contract, name='analyze_contract'),
 ]

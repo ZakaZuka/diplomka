@@ -1,48 +1,47 @@
-# import os
-# import tempfile
-# from django.conf import settings
-# from django.shortcuts import render
-# from .forms import ContractUploadForm
-# from .logic.analyzer import ERC20AuditTool
+import os
+import tempfile
+from django.conf import settings
+from django.shortcuts import render
+from .forms import ContractUploadForm
+from .logic.analyzer import ERC20AuditTool
+def upload_contract(request):
+    result = None
+    if request.method == "POST":
+        form = ContractUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES.get('contract_file')
+            code = form.cleaned_data.get('contract_code')
+            if file:
+                file_path = os.path.join(settings.MEDIA_ROOT, file.name)
+                with open(file_path, 'wb+') as dest:
+                    for chunk in file.chunks():
+                        dest.write(chunk)
+            elif code:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".sol", dir=settings.MEDIA_ROOT, mode='w', encoding='utf-8') as tmp:
+                    tmp.write(code)
+                    file_path = tmp.name
+            else:
+                form.add_error(None, "Вы должны загрузить файл или вставить код")
+                return render(request, 'contracts/upload.html', {'form': form})
+            auditor = ERC20AuditTool(file_path, openai_api_key='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')
+            result = auditor.analyze()
+    else:
+        form = ContractUploadForm()
+    return render(request, 'contracts/upload.html', {
+        'form': form,
+        'analysis_results': result
+        #'log': result.get('log')  # <-- добавь это
+    })
 
-# def upload_contract(request):
-#     result = None
-#     if request.method == "POST":
-#         form = ContractUploadForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             file = request.FILES.get('contract_file')
-#             code = form.cleaned_data.get('contract_code')
 
-#             if file:
-#                 file_path = os.path.join(settings.MEDIA_ROOT, file.name)
-#                 with open(file_path, 'wb+') as dest:
-#                     for chunk in file.chunks():
-#                         dest.write(chunk)
-#             elif code:
-#                 with tempfile.NamedTemporaryFile(delete=False, suffix=".sol", dir=settings.MEDIA_ROOT, mode='w', encoding='utf-8') as tmp:
-#                     tmp.write(code)
-#                     file_path = tmp.name
-#             else:
-#                 form.add_error(None, "Вы должны загрузить файл или вставить код")
-#                 return render(request, 'contracts/upload.html', {'form': form})
-
-#             auditor = ERC20AuditTool(file_path, openai_api_key='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')
-#             result = auditor.analyze()
-
-#     else:
-#         form = ContractUploadForm()
-
-#     return render(request, 'contracts/upload.html', {'form': form, 'result': result})
-
-# def extract_warnings(self, ai_text):
-#     """Извлекает предупреждения из AI анализа"""
-#     warnings = []
-#     if "Recommendation:" in ai_text:
-#         warnings = ai_text.split("Recommendation:")[1].strip().split('\n')
-#     return warnings
-
-# def index(request):
-#     return render(request, 'index.html')
+def extract_warnings(self, ai_text):
+    """Извлекает предупреждения из AI анализа"""
+    warnings = []
+    if "Recommendation:" in ai_text:
+        warnings = ai_text.split("Recommendation:")[1].strip().split('\n')
+    return warnings
+def index(request):
+    return render(request, 'index.html')
 
 
 # import tempfile
@@ -87,66 +86,64 @@
 # def index(request):
 #     return render(request, 'contracts/index.html')
 
-from django.shortcuts import render
-from django.http import JsonResponse
-from .forms import ContractForm
-from .utils import ContractAnalyzer
-import tempfile
-import os
-import logging
+# from django.shortcuts import render
+# from django.http import JsonResponse
+# from .forms import ContractForm
+# from .utils import ContractAnalyzer
+# import tempfile
+# import os
+# import logging
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 
-def contract_analysis_view(request):
-    """Обработчик для анализа контракта"""
-    analyzer = ContractAnalyzer()
-    results = {'success': False}
+# def contract_analysis_view(request):
+#     """Обработчик для анализа контракта"""
+#     analyzer = ContractAnalyzer()
+#     results = {'success': False}
     
-    if request.method == 'POST':
-        form = ContractForm(request.POST, request.FILES)
+#     if request.method == 'POST':
+#         form = ContractForm(request.POST, request.FILES)
         
-        if form.is_valid():
-            try:
-                # Создаем временный файл для анализа
-                with tempfile.NamedTemporaryFile(mode='w+', suffix='.sol', delete=False) as tmp_file:
-                    if form.cleaned_data.get('contract_file'):
-                        # Обрабатываем загруженный файл
-                        for chunk in form.cleaned_data['contract_file'].chunks():
-                            tmp_file.write(chunk.decode('utf-8'))
-                    else:
-                        # Обрабатываем введенный код
-                        tmp_file.write(form.cleaned_data['contract_code'])
+#         if form.is_valid():
+#             try:
+#                 # Создаем временный файл для анализа
+#                 with tempfile.NamedTemporaryFile(mode='w+', suffix='.sol', delete=False) as tmp_file:
+#                     if form.cleaned_data.get('contract_file'):
+#                         # Обрабатываем загруженный файл
+#                         for chunk in form.cleaned_data['contract_file'].chunks():
+#                             tmp_file.write(chunk.decode('utf-8'))
+#                     else:
+#                         # Обрабатываем введенный код
+#                         tmp_file.write(form.cleaned_data['contract_code'])
                     
-                    tmp_file_path = tmp_file.name
+#                     tmp_file_path = tmp_file.name
                 
-                # Анализируем контракт
-                issues, _ = analyzer.analyze(
-                    source=tmp_file_path,
-                    is_file=True
-                )
+#                 # Анализируем контракт
+#                 issues, _ = analyzer.analyze(
+#                     source=tmp_file_path,
+#                     is_file=True
+#                 )
                 
-                results.update({
-                    'success': True,
-                    'issues': issues
-                })
+#                 results.update({
+#                     'success': True,
+#                     'issues': issues
+#                 })
                 
-            except Exception as e:
-                logger.error(f"Ошибка анализа: {str(e)}")
-                results['error'] = str(e)
-            finally:
-                # Удаляем временный файл
-                if 'tmp_file_path' in locals() and os.path.exists(tmp_file_path):
-                    try:
-                        os.remove(tmp_file_path)
-                    except Exception as e:
-                        logger.error(f"Не удалось удалить временный файл: {str(e)}")
+#             except Exception as e:
+#                 logger.error(f"Ошибка анализа: {str(e)}")
+#                 results['error'] = str(e)
+#             finally:
+#                 # Удаляем временный файл
+#                 if 'tmp_file_path' in locals() and os.path.exists(tmp_file_path):
+#                     try:
+#                         os.remove(tmp_file_path)
+#                     except Exception as e:
+#                         logger.error(f"Не удалось удалить временный файл: {str(e)}")
             
-            return JsonResponse(results)
+#             return JsonResponse(results)
     
-    # GET запрос или невалидная форма
-    return render(request, 'contracts/analysis.html', {
-        'form': ContractForm()
-    })
+#     # GET запрос или невалидная форма
+#     return render(request, 'contracts/analysis.html', {'form': ContractForm()})
 
-def index(request):
-    return render(request, 'contracts/index.html')
+# def index(request):
+#     return render(request, 'contracts/index.html')

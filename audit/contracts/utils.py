@@ -91,7 +91,7 @@ class ContractAnalyzer:
                 "--detect", "all",  # Включаем ВСЕ детекторы
                 "--exclude-informational",
                 "--solc-remaps", "@openzeppelin/=node_modules/@openzeppelin/",
-                "--solc-settings", "{'optimizer': {'enabled': False}}",
+                #"--solc-settings", "{'optimizer': {'enabled': False}}",
                 "--filter-paths", "node_modules,test",
                 "--triage-mode"  # Более глубокий анализ
             ]
