@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Анализ смарт-контракта</title>
+    <link rel="stylesheet" href="{% static 'css/contracts/styles.css' %}">
+    <script src="{% static 'js/validate.js' %}" defer></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Анализ смарт-контракта ERC-20</h1>
+
+        <form method="post" enctype="multipart/form-data" onsubmit="return validateFile()">
+            {% csrf_token %}
+
+            <div class="form-group">
+                {{ form.contract_file.label_tag }}
+                {{ form.contract_file }}
+                <label for="file-upload" class="custom-file-button">
+                    Выбрать файл
+                </label>
+                <span id="file-name">Файл не выбран</span>
+                <div id="file-error" class="error-message"></div>
+            </div>
+
+            <div class="form-group">
+                {{ form.contract_code.label_tag }}
+                {{ form.contract_code }}
+            </div>
+
+            {% if form.errors %}
+            <div class="error-message">
+                {{ form.errors.contract_file }}
+                {{ form.errors.contract_code }}
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <button type="submit">Проанализировать</button>
+        </form>
+
+        {% if analysis_results %}
+        <div class="analysis-results">
+            <h2>Результаты анализа</h2>
+            <pre>{{ analysis_results }}</pre>
+        </div>
+        {% endif %}
+
+
+
+    </div>
+</body>
+
+</html>

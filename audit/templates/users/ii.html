@@ -1,0 +1,127 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализатор смарт-контрактов</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/users/styles.css' %}">
+    <script src="{% static 'js/metamask-auth.js' %}" defer></script>
+</head>
+<body>
+    <!-- Главная секция -->
+    <section class="hero-section text-center mb-5">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-4">Анализатор смарт-контрактов</h1>
+            <p class="lead mb-4">Проверяйте безопасность Ethereum-контрактов</p>
+            
+            {% if user.is_authenticated %}
+                <a href="{% url 'contracts:upload' %}" class="btn btn-light btn-lg px-4 me-2">
+                    Начать аудит <i class="bi bi-arrow-right"></i>
+                </a>
+                <a href="{% url 'users:profile' %}" class="btn btn-outline-light btn-lg px-4">
+                    Мой профиль
+                </a>
+            {% else %}
+                <button id="metamask-login" class="btn metamask-btn btn-lg text-white" onclick="connectMetaMask()">
+                    <i class="bi bi-wallet2"></i> Подключить MetaMask
+                </button>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Возможности -->
+    <div class="container mb-5">
+        <h2 class="text-center mb-4">Наши возможности</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card feature-card h-100 p-4">
+                    <div class="card-body text-center">
+                        <i class="bi bi-shield-lock fs-1 text-primary mb-3"></i>
+                        <h3>Проверка безопасности</h3>
+                        <p>Выявление уязвимостей с помощью Slither</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-card h-100 p-4">
+                    <div class="card-body text-center">
+                        <i class="bi bi-robot fs-1 text-primary mb-3"></i>
+                        <h3>AI-анализ</h3>
+                        <p>Детальные объяснения от OpenAI GPT</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-card h-100 p-4">
+                    <div class="card-body text-center">
+                        <i class="bi bi-file-earmark-code fs-1 text-primary mb-3"></i>
+                        <h3>Поддержка ERC20</h3>
+                        <p>Специальные проверки для токенов</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Как это работает -->
+    <section class="container mb-5">
+        <h2 class="text-center mb-4">Как это работает</h2>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="p-4 border rounded-3">
+                    <h4><span class="badge bg-primary me-2">1</span> Подключите кошелек</h4>
+                    <p>Авторизуйтесь через MetaMask для безопасного доступа</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-4 border rounded-3">
+                    <h4><span class="badge bg-primary me-2">2</span> Загрузите контракт</h4>
+                    <p>Добавьте Solidity-файл или укажите адрес контракта</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-4 border rounded-3">
+                    <h4><span class="badge bg-primary me-2">3</span> Запустите анализ</h4>
+                    <p>Система проверит контракт на 50+ видов уязвимостей</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-4 border rounded-3">
+                    <h4><span class="badge bg-primary me-2">4</span> Получите отчёт</h4>
+                    <p>Подробные результаты с оценкой рисков</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Пример отчёта -->
+    <section class="container mb-5">
+        <h2 class="text-center mb-4">Пример отчёта</h2>
+        <div class="card">
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h5><i class="bi bi-exclamation-triangle-fill"></i> Найдена уязвимость: Reentrancy</h5>
+                    <p>Контракт подвержен атаке повторного входа. Рекомендуем использовать шаблон Checks-Effects-Interactions.</p>
+                </div>
+                <div class="alert alert-success">
+                    <h5><i class="bi bi-check-circle-fill"></i> Проверка: ERC20-совместимость</h5>
+                    <p>Все обязательные методы токена реализованы корректно.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Подвал -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container text-center">
+            <p class="mb-0">© 2023 Анализатор смарт-контрактов. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <!-- Скрипты -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+</body>
+</html>
