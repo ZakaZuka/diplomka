@@ -5,7 +5,8 @@ pip install python-telegram-bot openai slither-analyzer solc-select
 pip install django
 pip install slither-analyzer
 pip install openai
-pip install slither-analyzer
+pip install web3
+pip install PyJWT
 # site map
 audit/
 ├── audit/                  # Главная Django-конфигурация
