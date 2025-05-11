@@ -1,69 +1,62 @@
-import json
-import secrets
-import logging
-from django.http import JsonResponse, HttpResponseForbidden
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from .utils import generate_nonce, verify_signature
+from django.http import JsonResponse
+from django.shortcuts import render
 from .models import User
+from .utils.web3_auth import verify_signature
+from .utils.jwt_handler import generate_token,  decode_token
+from django.http import HttpResponseForbidden
+import random, string, json
+from django.views.decorators.csrf import csrf_exempt
 
-logger = logging.getLogger(__name__)
-
-@csrf_exempt  # Временно отключаем CSRF для тестов
 def get_nonce(request):
-    if request.method != 'GET':
-        return JsonResponse({'error': 'Only GET allowed'}, status=405)
-    
     address = request.GET.get('address')
     if not address:
-        return JsonResponse({'error': 'Address required'}, status=400)
-    
-    try:
-        # 1. Ищем или создаём пользователя
-        user, created = User.objects.get_or_create(
-            eth_address=address.lower(),
-            defaults={
-                'username': address,
-                'nonce': secrets.token_hex(16)  # Генерация случайного nonce
-            }
-        )
-        
-        # 2. Обновляем nonce для существующих пользователей
-        if not created:
-            user.nonce = secrets.token_hex(16)
-            user.save()
-        
-        logger.info(f"Generated nonce for {address}: {user.nonce}")
-        return JsonResponse({'nonce': user.nonce})
-    
-    except Exception as e:
-        logger.error(f"Error in get_nonce: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=500)
-    
-    
+        return JsonResponse({'error': 'No address'}, status=400)
+    user, _ = User.objects.get_or_create(eth_address=address.lower())
+    user.nonce = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+    user.save()
+    return JsonResponse({'nonce': user.nonce})
+
 @csrf_exempt
-@require_POST
-def metamask_login_view(request):
+def verify_login(request):
+    data = json.loads(request.body)
+    address = data.get('address')
+    signature = data.get('signature')
+
     try:
-        data = json.loads(request.body)
-        address = data.get('address')
-        signature = data.get('signature')
+        user = User.objects.get(eth_address=address.lower())
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=400)
 
-        user = User.objects.get(eth_address=address)
-        if verify_signature(address, signature, user.nonce):
-            user.nonce = generate_nonce()
-            user.save()
-            login(request, user)
-            return JsonResponse({'status': 'success'})
-        else:
-            return HttpResponseForbidden('Invalid signature')
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=400)
+    if verify_signature(address, signature, user.nonce):
+        token = generate_token(user)
+        response = JsonResponse({'success': True})
+        response.set_cookie(
+            key='jwt',
+            value=token,
+            httponly=True,
+            secure=False,
+            samesite='Lax',
+            max_age=60 * 60 * 24
+        )
+        return response
 
+    return JsonResponse({'error': 'Invalid signature'}, status=400)
 
-@login_required
-def logout_view(request):
-    logout(request)
-    return JsonResponse({'status': 'logged out'})
+def profile_view(request):
+    token = request.COOKIES.get('jwt')
+    if not token:
+        return HttpResponseForbidden("Not authenticated")
+
+    payload = decode_token(token)
+    if not payload:
+        return HttpResponseForbidden("Invalid token")
+
+    try:
+        user = User.objects.get(id=payload['user_id'])
+    except User.DoesNotExist:
+        return HttpResponseForbidden("User not found")
+
+    return render(request, '/users/profile.html', {'user': user})
+
+def index(request):
+    return render(request, 'index.html')

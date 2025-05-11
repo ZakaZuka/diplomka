@@ -9,6 +9,8 @@
 from django.urls import path
 from .views import upload_contract
 
+app_name = 'contracts'
+
 urlpatterns = [
-    path('', upload_contract, name='analyze_contract'),
+    path('upload/', upload_contract, name='upload')
 ]

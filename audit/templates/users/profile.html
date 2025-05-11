@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>User Profile</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #6366f1;
+            --background: linear-gradient(to right, #eef2ff, #e0e7ff);
+            --font-color: #1f2937;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            color: var(--font-color);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 60px auto;
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 40px 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.6s ease;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        nav a {
+            margin-left: 20px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+            padding: 3rem 0;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .profile-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .profile-info {
+            padding: 15px;
+            background-color: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .profile-info p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .feature-card {
+            border-radius: 15px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .feature-card h2 {
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 5px;
+        }
+
+        .action-btn {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-top: 20px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .action-btn:hover {
+            background: var(--secondary-color);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            color: #9ca3af;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                margin: 30px 15px;
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <div><strong style="color: var(--primary-color); font-size: 20px;">🔐 SmartAudit</strong></div>
+            <div>
+                <a href="/">🏠 Главная</a>
+                <a href="/logout/">🚪 Выйти</a>
+            </div>
+        </nav>
+
+        <div class="hero-section">
+            <h1>Добро пожаловать в профиль</h1>
+        </div>
+
+        <div class="profile-card">
+            <div class="profile-info">
+                <p><span class="info-label">🪙 Ethereum Address:</span> {{ user.eth_address|default:"—" }}</p>
+                <p><span class="info-label">🔑 Nonce:</span> {{ user.nonce|default:"—" }}</p>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <h2>Token Information</h2>
+            <p>Здесь вы можете отобразить балансы токенов, транзакции и другую информацию из блокчейна.</p>
+        </div>
+
+        <div class="feature-card">
+            <h2>Activity</h2>
+            <p>Ваша недавняя активность будет отображена здесь.</p>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="{% url 'contracts:upload' %}" class="action-btn">🚀 Начать аудит смарт-контракта</a>
+        </div>
+
+        <footer>
+            <p>© 2025 SmartAudit. Все права защищены.</p>
+        </footer>
+    </div>
+</body>
+</html>

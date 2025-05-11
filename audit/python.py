@@ -2,7 +2,6 @@ import subprocess
 import json
 import sys
 from pathlib import Path
-from deep_translator import GoogleTranslator
 import openai
 
 # Настройка OpenAI

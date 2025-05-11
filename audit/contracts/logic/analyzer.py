@@ -173,14 +173,14 @@ class ERC20AuditTool:
         code = self.contract_path.read_text(encoding='utf-8')
 
         # AI-анализ
-        ai_analysis = self.analyze_with_ai(code)
+        #ai_analysis = self.analyze_with_ai(code) 181 {ai_analysis}
+
 
         # Формируем текст для вывода
         result_text = f"""
             === 📄 AI-анализ ===
 
-            {ai_analysis}
-
+            
             === ⚙️ Slither результат ===
 
             {slither_output if slither_output else '❌ Slither ничего не вернул или произошла ошибка'}

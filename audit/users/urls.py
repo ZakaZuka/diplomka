@@ -1,11 +1,11 @@
 from django.urls import path
 from . import views
+from django.shortcuts import render
 
-app_name = "users"
+app_name = 'users'
 
 urlpatterns = [
-    path('auth/nonce/', views.get_nonce, name='get_nonce'),  # Важно: без параметра в URL
-    path('auth/metamask/', views.metamask_login_view, name='metamask_login'),
-    path('auth/logout/', views.logout_view, name='logout'),
-    path('auth/nonce/<str:address>/', views.get_nonce, name='get_nonce'),
+    path('nonce/', views.get_nonce, name='get_nonce'),
+    path('login/', views.verify_login, name='verify_login'),
+    path('profile/', lambda request: render(request, 'users/profile.html'), name='profile'),
 ]

@@ -17,10 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from contracts.views import index
+from users.views import index
+from django.http import JsonResponse
+from django.urls import re_path
 
 urlpatterns = [
-    #path('', index, name='index'),  # Главная страница
-    path('', include('contracts.urls')),
+    path('', index, name='index'),  # Главная страница
     path('admin/', admin.site.urls),
-    #path('auth/', include('users.urls')),  
+    path('users/', include('users.urls', namespace='users')),
+    path('contracts/', include('contracts.urls', namespace='contracts')),
+    re_path(r'^\.well-known/appspecific/com\.chrome\.devtools\.json$', lambda r: JsonResponse({})),
+
 ]

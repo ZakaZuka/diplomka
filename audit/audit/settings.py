@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'users.middleware.JWTAuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = 'audit.urls'
@@ -63,6 +64,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'users.context_processors.jwt_user',
             ],
         },
     },
@@ -134,7 +136,7 @@ SLITHER_SETTINGS = {
     'solc_solcs_select': '0.8.0',  # Версия компилятора
 }
 
-AUTH_USER_MODEL = 'users.User'  # Теперь Django использует нашу модель
+AUTH_USER_MODEL = 'users.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
