@@ -171,3 +171,19 @@ textarea:focus {
 .custom-file-button:hover {
     background-color: var(--secondary-color);
 }
+
+.result-box {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-left: 6px solid var(--primary-color);
+    padding: 20px;
+    border-radius: 12px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 15px;
+    white-space: pre-wrap;
+    line-height: 1.6;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    animation: fadeIn 0.5s ease-in-out;
+    max-height: 600px;
+    overflow-y: auto;
+}
