@@ -7,6 +7,7 @@ pip install slither-analyzer
 pip install openai
 pip install web3
 pip install PyJWT
+pip install google-generativeai
 # site map
 audit/
 ├── audit/                  # Главная Django-конфигурация
