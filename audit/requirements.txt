@@ -1,5 +1,7 @@
-django>=5.0
+django
+google-generativeai
 openai
 slither-analyzer
 web3
 PyJWT
+numpy
