@@ -8,6 +8,7 @@ pip install openai
 pip install web3
 pip install PyJWT
 pip install google-generativeai
+pip install numpy
 # site map
 audit/
 ├── audit/                  # Главная Django-конфигурация
