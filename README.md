@@ -29,12 +29,30 @@ audit/
 │       ├── __init__.py
 │       └── analyzer.py     # Класс ERC20AuditTool с Slither и OpenAI
 │
+├── users/                  # Новое приложение для пользователей
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py           # Модель пользователя (можно расширить стандартную)
+│   ├── tests.py
+│   ├── forms.py            # Формы регистрации, входа и пр.
+│   ├── urls.py              # URL-ы приложения (profile)
+│   ├── middleware.py             # Элемент авторизации через Metamask
+│   ├── context_processors.py             # Элемент авторизации через Metamask
+│   └── views.py            # Логика работы с пользователями
+│   └── utils/               # Вспомогательная логика для авторизации
+│       ├── __init__.py
+│       └── jwt_handler.py     # Элемент авторизации через Metamask
+│       └── web3_auth.py     # Элемент авторизации через Metamask
+│
 ├── media/                  # Загружаемые пользователем файлы
 │   └── *.sol               # Контракты (автоматически)
 │
 ├── templates/
-│   └── contracts/
-│       └── upload.html     # HTML-шаблон загрузки и вывода результата
+│   ├── contracts/
+│   │   └── upload.html     # HTML-шаблон загрузки и вывода результата
+│   └── users/              # Шаблоны для пользователей
+│       └── profile.html
 │
 ├── static/                 # (если будут стили, js и т.п.)
 │
