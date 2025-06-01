@@ -5,12 +5,11 @@ const MetaMaskAuth = {
                 throw new Error('MetaMask не установлен!');
             }
 
-            const accounts = await window.ethereum.request({
-                method: 'eth_requestAccounts'
+            const accounts = await window.ethereum.request({ 
+                method: 'eth_requestAccounts' 
             });
             const walletAddress = accounts[0];
 
-            // Изменено на GET запрос для nonce
             const nonceResponse = await this._fetchNonce(walletAddress);
             const nonce = nonceResponse.nonce;
 
@@ -29,7 +28,6 @@ const MetaMaskAuth = {
     },
 
     async _fetchNonce(walletAddress) {
-        // Изменено на GET с параметром в URL
         const response = await fetch(`/users/nonce/?address=${walletAddress}`);
         if (!response.ok) throw new Error('Ошибка при получении nonce');
         return await response.json();
@@ -47,22 +45,21 @@ const MetaMaskAuth = {
     },
 
     async _login(walletAddress, signature) {
+        const csrfToken = this._getCSRFToken();
         const response = await fetch('/users/login/', {
             method: 'POST',
-            credentials: 'include',  // Важно: отправляем куки
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ address: walletAddress, signature })
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ 
+                address: walletAddress,  // Изменено на address вместо wallet_address
+                signature: signature 
+            })
         });
-
-        const data = await response.json();
-        console.log('Login response:', data);  // Отладочный вывод
-
-        if (data.success) {
-            // Перенаправляем после успешного сохранения куки
-            window.location.href = data.redirect || '/users/profile/';
-        } else {
-            throw new Error(data.error || 'Auth failed');
-        }
+        
+        if (!response.ok) throw new Error('Ошибка при авторизации');
+        return await response.json();
     },
 
     _getCSRFToken() {

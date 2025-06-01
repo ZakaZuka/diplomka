@@ -25,19 +25,14 @@ def upload_contract(request):
             else:
                 form.add_error(None, "Вы должны загрузить файл или вставить код")
                 return render(request, 'contracts/upload.html', {'form': form})
-<<<<<<< HEAD
             api_key = config("GENAI_API_KEY")
             auditor = ERC20AuditTool(file_path, openai_api_key=api_key)
-=======
-            auditor = ERC20AuditTool(file_path, openai_api_key='')
->>>>>>> b2b3ba7e1a50c5bed9a3d4fa6bb9f980339f6914
             result = auditor.analyze()
     else:
         form = ContractUploadForm()
     return render(request, 'contracts/upload.html', {
         'form': form,
         'analysis_results': result
-        #'log': result.get('log')  # <-- добавь это
     })
 
 

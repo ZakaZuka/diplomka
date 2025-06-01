@@ -11,6 +11,8 @@ class ERC20AuditTool:
         self.contract_path = Path(contract_path)
         genai.configure(api_key=openai_api_key)
         self.model = genai.GenerativeModel("gemini-1.5-flash")
+        raw_phrases = config("PLACEHOLDER_PHRASES", default="")
+        self._placeholder_phrases = [p.strip().lower() for p in raw_phrases.split("|") if p.strip()]
 
     def _render_settings(self, template_name: str, **kwargs) -> str:
         template_path = Path(__file__).parent / "set_tasks" / template_name
@@ -38,9 +40,18 @@ class ERC20AuditTool:
 
     def analyze_with_ai(self):
         slither_output = self.run_slither_json()
+
+        if not slither_output.strip():
+            return "Ошибок не обнаружено"
+
         set_task = self._render_settings("slither_translate.txt", report=slither_output)
         response = self.model.generate_content(set_task)
-        return response.text
+        result = response.text.strip()
+
+        if not result or any(phrase in result.lower() for phrase in self._placeholder_phrases):
+            return "Ошибок не обнаружено"
+
+        return result
 
     def analyze(self):
         print(f"Анализируем: {self.contract_path.name}")

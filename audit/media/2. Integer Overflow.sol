@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: MIT
+pragma solidity =0.7.6;
+
+contract UnderflowDemo {
+    uint public counter = 0;
+
+    function decrement() public {
+        counter -= 1; // Здесь underflow произойдет, вернется max uint
+    }
+}
