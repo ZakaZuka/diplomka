@@ -9,6 +9,7 @@ pip install web3
 pip install PyJWT
 pip install google-generativeai
 pip install numpy
+pip install python-decouple
 pip install jinja2
 # site map
 audit/
