@@ -5,7 +5,5 @@ slither-analyzer
 web3
 PyJWT
 numpy
-<<<<<<< HEAD
 jinja2 
-=======
->>>>>>> b2b3ba7e1a50c5bed9a3d4fa6bb9f980339f6914
+python-decouple
