@@ -66,7 +66,7 @@ class ERC20AuditTool:
     
 if __name__ == "__main__":
     tool = ERC20AuditTool("soll.sol", 
-                          openai_api_key="AIzaSyA1Y8Ii4Hsfl71q4bfQq5IshxTYHjkxiZA")
+                          openai_api_key="")
     result = tool.analyze()
 
     print("\n=== 📋 AI-анализ ===")
